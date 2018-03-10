@@ -1013,6 +1013,8 @@ sweetAlert.hideProgressSteps = () => {
   }
 }
 
+sweetAlert.getCurrentContext = () => currentContext
+
 sweetAlert.argsToParams = (args) => {
   const params = {}
   switch (typeof args[0]) {
@@ -1034,6 +1036,23 @@ sweetAlert.argsToParams = (args) => {
       return false
   }
   return params
+}
+
+sweetAlert.mixin = function (...mixins) {
+  const reducer = (parentSwal, mixin) => {
+    if (typeof mixin === 'object') {
+      const childSwal = (...args) => parentSwal(Object.assign({}, mixin, parentSwal.argsToParams(args)))
+      return Object.assign(childSwal, parentSwal)
+    } else if (typeof mixin === 'function') {
+      const mixinResult = mixin(parentSwal)
+      const [fn, props] = typeof mixinResult === 'function' ? [mixinResult, {}] : mixinResult
+      const childSwal = (...args) => fn(parentSwal.argsToParams(args))
+      return Object.assign(childSwal, parentSwal, props)
+    } else {
+      throw new TypeError(`Expected 'mixin' to be an object or function, got ${typeof mixin}`)
+    }
+  }
+  return mixins.reduce(reducer, this)
 }
 
 sweetAlert.DismissReason = DismissReason
