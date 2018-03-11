@@ -1046,7 +1046,10 @@ sweetAlert.mixin = function (...mixins) {
     } else if (typeof mixin === 'function') {
       const mixinResult = mixin(parentSwal)
       const [fn, props] = typeof mixinResult === 'function' ? [mixinResult, {}] : mixinResult
-      const childSwal = (...args) => fn(parentSwal.argsToParams(args))
+      const childSwal = (...args) => {
+        const argsToParams = props.argsToParams || parentSwal.argsToParams
+        return fn(argsToParams(args))
+      }
       return Object.assign(childSwal, parentSwal, props)
     } else {
       throw new TypeError(`Expected 'mixin' to be an object or function, got ${typeof mixin}`)

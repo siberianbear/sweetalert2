@@ -116,3 +116,23 @@ QUnit.test('function-type mixins with static properties & methods', (assert) => 
   ])
   assert.deepEqual(Object.entries(mySwal), [ ...Object.entries(swal), ...Object.entries(staticMembers) ])
 })
+
+QUnit.test('function-type mixin extending argsToParams', (assert) => {
+  let argsToParams
+  let argsToParamsCalledCount = 0
+  const mySwal = swal.mixin(swal => {
+    argsToParams = args => {
+      argsToParamsCalledCount++
+      const [title, html, footer] = args
+      return Object.assign({}, swal.argsToParams([title, html]), {footer})
+    }
+    return [
+      options => options,
+      { argsToParams }
+    ]
+  })
+  assert.equal(mySwal.argsToParams, argsToParams)
+  assert.equal(argsToParamsCalledCount, 0)
+  assert.deepEqual(mySwal('title', 'html', 'footer'), { title: 'title', html: 'html', footer: 'footer' })
+  assert.equal(argsToParamsCalledCount, 1)
+})
